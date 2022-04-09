@@ -44,22 +44,22 @@ contract NFTRental {
         mapping (uint32 => rentedNFT) userRentedNfts;
         uint32 userRentedNftsSize;
 
-        mapping (uint32 => lendedNFT) userWishList;
-        uint32 userWishListSize;
+        mapping (uint32 => lendedNFT) userWishlist;
+        uint32 userWishlistSize;
 
         // lendedNFT[] userLendedNfts;
         // rentedNFT[] userRentedNfts;
-        // lendedNFT[] userWishList;
+        // lendedNFT[] userWishlist;
     }
 
     // Key strings of nfts available to rent on app
-    string[] nftKeysListAvaiableForRent;
+    string[] private nftKeysListAvaiableForRent;
 
     // Mapping of above key to nftProps
-    mapping (string => nftProps) nftKeyToNftProps;
+    mapping (string => nftProps) public nftKeyToNftProps;
 
     // Address of all the users of the app
-    address[] userAddressList;
+    address[] private userAddressList;
 
     // Mapping of user address to user details
     mapping (address => User) public addressToUser;
@@ -71,14 +71,34 @@ contract NFTRental {
         return userAddressList;
     }
 
-    function addUser(address _userAddress) external {
-        User storage newUser = addressToUser[_userAddress];
-        newUser.userAddress=_userAddress;
-        newUser.userLendedNftsSize=0;
-        newUser.userRentedNftsSize=0;
-        newUser.userWishListSize=0;
+    function getNftKeysListAvaiableForRent() public view returns(string[] memory) {
+        return nftKeysListAvaiableForRent;
+    }
 
-        userAddressList.push(_userAddress);
+    function getUserLendedNFTDetails(address _userAddress,uint32 _index) public view returns(lendedNFT memory) {
+        User storage user = addressToUser[_userAddress];
+
+        // User should exist
+        require(user.userAddress!=address(0),"User does not exists");
+
+        // Index should be less than userLendedNftsSize
+        require(_index<user.userLendedNftsSize,"Nft at the given index does not exist");
+
+        return user.userLendedNfts[_index];
+    }
+
+    function addUser(address _userAddress) external {
+        // Check if user already exist or not
+        if (addressToUser[_userAddress].userAddress==address(0)) {
+            // User does not exist
+            User storage newUser = addressToUser[_userAddress];
+            newUser.userAddress=_userAddress;
+            newUser.userLendedNftsSize=0;
+            newUser.userRentedNftsSize=0;
+            newUser.userWishlistSize=0;
+
+            userAddressList.push(_userAddress);
+        }
     }
 
     // Main lend function called by frontend
@@ -95,6 +115,9 @@ contract NFTRental {
         uint256 _dailyRent,
         uint256 _collateral
     ) external {
+        // Lender address should exist in our app
+        require(addressToUser[_lenderAddress].userAddress!=address(0),"User does not exist");
+
         // NFT should not already available for renting
         //There is no proper way to check if a key already exists or not therefore we are checking for default value i.e., all bits are 0
         require(nftKeyToNftProps[_nftKey].nftAddress==address(0),"NFT is already available for renting");
@@ -129,6 +152,8 @@ contract NFTRental {
         nftKeysListAvaiableForRent.push(_nftKey);
         emit NFTLended();
     }
+
+    
 
     
     //nftProps[] nftsAvailableForRent;
