@@ -1,0 +1,36 @@
+<html>
+  <head>
+    <!-- Moralis SDK code -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script src="https://unpkg.com/moralis/dist/moralis.js"></script>
+  </head>
+  <body>
+    <h1>Demo!</h1>
+
+    <!-- <button id="btn-login">Moralis Login</button>
+    <button id="btn-logout">Logout</button> -->
+
+    <script>
+      // connect to Moralis server
+
+      const serverUrl = "https://um2kbfqekfuf.usemoralis.com:2053/server";
+      const appId = "sW4BFlpNhMgTx4IbBLQr1kTPZTHdhuFYvsSeyaBE";
+      Moralis.start({ serverUrl, appId });
+
+      async function getNfts() {
+            
+        console.log("hello");
+          const options = {
+              chain: "eth", 
+              address: "0xf56345338cb4cddaf915ebef3bfde63e70fe3053"
+           };
+          console.log("here");
+          const nfts = await Moralis.Web3API.account.getNFTs(options);
+          console.log("nfts:");
+          console.log(nfts);
+      }
+
+      getNfts();
+    </script>
+  </body>
+</html>
