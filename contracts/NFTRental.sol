@@ -52,17 +52,19 @@ contract NFTRental {
         // lendedNFT[] userWishlist;
     }
 
+    // Address of all the users of the app
+    address[] private userAddressList;
+
+    // Mapping of user address to user details
+    mapping (address => User) public addressToUser;
+
     // Key strings of nfts available to rent on app
     string[] private nftKeysListAvaiableForRent;
 
     // Mapping of above key to nftProps
     mapping (string => nftProps) public nftKeyToNftProps;
 
-    // Address of all the users of the app
-    address[] private userAddressList;
-
-    // Mapping of user address to user details
-    mapping (address => User) public addressToUser;
+    mapping (string => lendedNFT) public nftKeyToLendedNftDetails; 
 
     // Events
     event NFTLended(); 
@@ -121,6 +123,7 @@ contract NFTRental {
         // NFT should not already available for renting
         //There is no proper way to check if a key already exists or not therefore we are checking for default value i.e., all bits are 0
         require(nftKeyToNftProps[_nftKey].nftAddress==address(0),"NFT is already available for renting");
+        require(nftKeyToLendedNftDetails[_nftKey].lenderAddress==address(0),"NFT is already available for renting");
 
         // Owner of nft address and lender address must be same
         require(_nftOwner==_lenderAddress,"Non NFT Owner");
@@ -149,11 +152,13 @@ contract NFTRental {
         currentUser.userLendedNfts[lendSize] = newLend;
         currentUser.userLendedNftsSize++;
 
+        nftKeyToLendedNftDetails[_nftKey]=newLend;
+
         nftKeysListAvaiableForRent.push(_nftKey);
         emit NFTLended();
     }
 
-    
+
 
     
     //nftProps[] nftsAvailableForRent;

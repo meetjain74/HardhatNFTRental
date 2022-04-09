@@ -135,7 +135,7 @@ describe("NFT Rental contract", () => {
            const nftKeysListAvaiableForRent = await contract.getNftKeysListAvaiableForRent();
            expect(nftKeysListAvaiableForRent[0]).to.equal(_nftKey);
 
-           // Check mapping
+           // Check mapping nftKeyToNftProps
            const nft = await contract.nftKeyToNftProps(_nftKey);
            expect(nft.nftKey).to.equal(_nftKey);
            expect(nft.nftOwner).to.equal(_nftOwner);
@@ -157,6 +157,14 @@ describe("NFT Rental contract", () => {
            expect(lendedNftDetails.dueDate).to.equal(_dueDate);
            expect(lendedNftDetails.dailyRent).to.equal(_dailyRent);
            expect(lendedNftDetails.collateral).to.equal(_collateral);
+
+           // Check mapping nftKeyToLendedNftDetails
+           const lendedNft = await contract.nftKeyToLendedNftDetails(_nftKey);
+           expect(lendedNft.nftKey).to.equal(_nftKey);
+           expect(lendedNft.lenderAddress).to.equal(_lenderAddress);
+           expect(lendedNft.dueDate).to.equal(_dueDate);
+           expect(lendedNft.dailyRent).to.equal(_dailyRent);
+           expect(lendedNft.collateral).to.equal(_collateral);
        });
     });
 
