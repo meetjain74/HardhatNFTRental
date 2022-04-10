@@ -42,14 +42,15 @@ contract NFTRental {
     struct User {
         address userAddress; // Address of user of app 
 
-        mapping (uint32 => lendedNFT) userLendedNfts;
-        uint32 userLendedNftsSize;
+        // String for mappings is nftKey
+        mapping (string => lendedNFT) userLendedNfts;
+        // uint32 userLendedNftsSize;
 
-        mapping (uint32 => rentedNFT) userRentedNfts;
-        uint32 userRentedNftsSize;
+        mapping (string => rentedNFT) userRentedNfts;
+        // uint32 userRentedNftsSize;
 
-        mapping (uint32 => lendedNFT) userWishlist;
-        uint32 userWishlistSize;
+        mapping (string => lendedNFT) userWishlist;
+        // uint32 userWishlistSize;
 
         // lendedNFT[] userLendedNfts;
         // rentedNFT[] userRentedNfts;
@@ -65,7 +66,7 @@ contract NFTRental {
     // Key strings of nfts available to rent on app
     string[] private nftKeysListAvaiableForRent;
 
-    // Mapping of above key to nftProps
+    // Mapping of above nft key to nftProps
     mapping (string => nftProps) public nftKeyToNftProps;
 
     // Mapping of nft key to lended nft details
@@ -86,7 +87,7 @@ contract NFTRental {
         return nftKeysListAvaiableForRent;
     }
 
-    function getUserLendedNFTDetails(address _userAddress,uint32 _index) public view returns(lendedNFT memory) {
+    function getUserLendedNFTDetails(address _userAddress,string memory _nftKey) public view returns(lendedNFT memory) {
         // Should not be a zero address
         require(_userAddress!=address(0),"Invalid address");
 
@@ -95,10 +96,13 @@ contract NFTRental {
         // User should exist
         require(user.userAddress!=address(0),"User does not exists");
 
-        // Index should be less than userLendedNftsSize
-        require(_index<user.userLendedNftsSize,"Nft at the given index does not exist");
+        // // Index should be less than userLendedNftsSize
+        // require(_index<user.userLendedNftsSize,"Nft at the given index does not exist");
 
-        return user.userLendedNfts[_index];
+        // The nft _nftKey should exist in user lended NFTs
+        require(user.userLendedNfts[_nftKey].lenderAddress!=address(0),"User does not have any such lended Nft");
+
+        return user.userLendedNfts[_nftKey];
     }
 
     function addUser(address _userAddress) external {
@@ -113,9 +117,9 @@ contract NFTRental {
             // User does not exist
             User storage newUser = addressToUser[_userAddress];
             newUser.userAddress=_userAddress;
-            newUser.userLendedNftsSize=0;
-            newUser.userRentedNftsSize=0;
-            newUser.userWishlistSize=0;
+            // newUser.userLendedNftsSize=0;
+            // newUser.userRentedNftsSize=0;
+            // newUser.userWishlistSize=0;
 
             userAddressList.push(_userAddress);
         }
@@ -174,9 +178,9 @@ contract NFTRental {
     ) private {
         lendedNFT memory newLend = lendedNFT(_nftKey,_lenderAddress,address(0),_dueDate,_dailyRent,_collateral);
         User storage currentUser = addressToUser[_lenderAddress];
-        uint32 lendSize = currentUser.userLendedNftsSize;
-        currentUser.userLendedNfts[lendSize] = newLend;
-        currentUser.userLendedNftsSize++;
+        // uint32 lendSize = currentUser.userLendedNftsSize;
+        currentUser.userLendedNfts[_nftKey] = newLend;
+        // currentUser.userLendedNftsSize++;
 
         nftKeyToLendedNftDetails[_nftKey]=newLend;
 
@@ -203,7 +207,7 @@ contract NFTRental {
         require(nftKeyToLendedNftDetails[_nftKey].lenderAddress!=address(0),"NFT is not available for renting");
 
         // Rental start time should be less than current time
-        require(_rentalStartTime<block.timestamp,"Bad time bounds"); 
+        require(_rentalStartTime<block.timestamp,"Bad time bounds");
 
         uint32 rentalEndTime = _rentalStartTime + (_numberOfDays*1 days);
         uint32 _dueDate = nftKeyToLendedNftDetails[_nftKey].dueDate;
@@ -216,6 +220,40 @@ contract NFTRental {
 
         // Amount to be paid should be greater than or equal to rentalPayment
         require(msg.value>=totalPayment,"Can't rent NFT as insufficient amount paid");
+
+        // Borrower address of the nft to be rented should be address(0) 
+        require(nftKeyToLendedNftDetails[_nftKey].borrowerAddress==address(0),"NFT already rented by someone else");
+
+        // Delete and update mappings 
+
+        // Update borrower in lended user's nft
+        
+        address lenderAddress = nftKeyToLendedNftDetails[_nftKey].lenderAddress;
+        User storage lender = addressToUser[lenderAddress];
+        require(lender.userLendedNfts[_nftKey].borrowerAddress==address(0),"NFT already rented by someone else");
+        lender.userLendedNfts[_nftKey].borrowerAddress = _borrowerAddress;
+
+        // Add nft in borrower address rented list 
+
+        rentedNFT memory newRentedNft = rentedNFT(_nftKey,lenderAddress,_borrowerAddress,_numberOfDays,_rentalStartTime);
+        User storage renter = addressToUser[_borrowerAddress];
+
+        // Nft should not be already in user rented Nfts
+        require(renter.userRentedNfts[_nftKey].borrowerAddress==address(0),"Nft is already present in user rented Nfts");
+        renter.userRentedNfts[_nftKey] = newRentedNft;
+
+        // Add nft to app's rented nft list 
+
+        require(nftKeyToRentedNftDetails[_nftKey].borrowerAddress==address(0),"Nft is already present in user rented Nfts");
+        nftKeyToRentedNftDetails[_nftKey] = newRentedNft;
+
+        // Remove nft from nfts available for rent
+
+        uint _nftKeyIndex = _getElementIndex(_nftKey);
+        _deleteElementAtIndex(_nftKeyIndex);
+        delete nftKeyToLendedNftDetails[_nftKey];
+
+        // Payment
 
         if (msg.value>totalPayment) {
             // Transfer remaining amount back to his account
@@ -236,19 +274,26 @@ contract NFTRental {
         lenderAddress_.transfer(rentalPayment);
 
         emit NFTRented();
-
-        // Delete and update mappings 
-
-        // Update borrower in lended user's nft
-        address lenderAddress = nftKeyToLendedNftDetails[_nftKey].lenderAddress;
-        User storage lender = addressToUser[lenderAddress];
-        
-
-        // Add nft in borrower address rented list
-        // Remove nft from nfts available for rent
-        // Add nft to app's rented nft list 
-        
     }
+
+    function _getElementIndex(string memory _element) private view returns(uint) {
+        uint len = nftKeysListAvaiableForRent.length;
+        for (uint i=0;i<len;i++) {
+            if (keccak256(abi.encodePacked(_element))==keccak256(abi.encodePacked(nftKeysListAvaiableForRent[i]))) {
+                return i;
+            }
+        }
+        return len;
+    }
+
+    function _deleteElementAtIndex(uint _index) private {
+        require(_index<nftKeysListAvaiableForRent.length,"Nft key not available in the app renting list");
+
+        uint _lastIndex = nftKeysListAvaiableForRent.length-1;
+        nftKeysListAvaiableForRent[_index] = nftKeysListAvaiableForRent[_lastIndex];
+        nftKeysListAvaiableForRent.pop();
+    }
+
 
     //nftProps[] nftsAvailableForRent;
 

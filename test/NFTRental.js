@@ -25,36 +25,48 @@ describe("NFT Rental contract", () => {
             expect(userAddressList[0]).to.equal(addr1.address);
     
             const user = await contract.connect(addr1).addressToUser(addr1.address);
-            expect(user.userAddress).to.equal(addr1.address);
-            expect(user.userLendedNftsSize).to.equal(0);
-            expect(user.userRentedNftsSize).to.equal(0);
-            expect(user.userWishlistSize).to.equal(0);
+            expect(user).to.equal(addr1.address);
+            // expect(user.userAddress).to.equal(addr1.address);
+            // expect(user.userLendedNftsSize).to.equal(0);
+            // expect(user.userRentedNftsSize).to.equal(0);
+            // expect(user.userWishlistSize).to.equal(0);
         });
     });
     
     describe("Contract Getters", () => {
         
         describe("Getter for User NFT Lended Details", () => {
-            let _userAddress,_index;
+            let _userAddress;
+            let _nftKey;
+            // let _index;
 
             beforeEach(async () => {
                 _userAddress = addr1.address;
-                _index = 0;
+                _nftKey = "0xcd3b766ccdd6ae721141f452c550ca635964ce718";
+                // _index = 0;
             });
 
             it("User should exist for able to fetch his/her lended NFT details",async () => {
                 await expect(contract.connect(addr1).getUserLendedNFTDetails(
-                    _userAddress,_index
+                    _userAddress,_nftKey
                 ))
                 .to.be.revertedWith("User does not exists");
             });
 
-            it("Index of NFT to be fetched should exist",async () => {
+            // it("Index of NFT to be fetched should exist",async () => {
+            //     await contract.connect(addr1).addUser(_userAddress);
+            //     await expect(contract.connect(addr1).getUserLendedNFTDetails(
+            //         _userAddress,_index
+            //     ))
+            //     .to.be.revertedWith("Nft at the given index does not exist");
+            // });
+
+            it("User should have the lended Nft with the key",async () => {
                 await contract.connect(addr1).addUser(_userAddress);
                 await expect(contract.connect(addr1).getUserLendedNFTDetails(
-                    _userAddress,_index
+                    _userAddress,_nftKey
                 ))
-                .to.be.revertedWith("Nft at the given index does not exist");
+                .to.be.revertedWith("User does not have any such lended Nft");
             });
         });
     });
@@ -160,12 +172,13 @@ describe("NFT Rental contract", () => {
 
            // Get user from address
            const user = await contract.connect(addr1).addressToUser(_lenderAddress);
-           expect(user.userAddress).to.equal(_lenderAddress);
-           expect(user.userLendedNftsSize).to.equal(1);
-           expect(user.userRentedNftsSize).to.equal(0);
-           expect(user.userWishlistSize).to.equal(0);
+           expect(user).to.equal(_lenderAddress);
+        //    expect(user.userAddress).to.equal(_lenderAddress);
+        //    expect(user.userLendedNftsSize).to.equal(1);
+        //    expect(user.userRentedNftsSize).to.equal(0);
+        //    expect(user.userWishlistSize).to.equal(0);
 
-           const lendedNftDetails = await contract.connect(addr1).getUserLendedNFTDetails(_lenderAddress,0);
+           const lendedNftDetails = await contract.connect(addr1).getUserLendedNFTDetails(_lenderAddress,_nftKey);
            expect(lendedNftDetails.nftKey).to.equal(_nftKey);
            expect(lendedNftDetails.lenderAddress).to.equal(_lenderAddress);
            expect(lendedNftDetails.borrowerAddress).to.equal("0x0000000000000000000000000000000000000000");
@@ -184,6 +197,18 @@ describe("NFT Rental contract", () => {
        });
     });
 
+    describe("Renting", () => {
+        let _nftKey,_borrowerAddress,_numberOfDays,_rentalStartTime;
+
+        beforeEach(async () => {
+            _nftKey = "0xcd3b766ccdd6ae721141f452c550ca635964ce718";
+            _borrowerAddress = addr1.address;
+            _numberOfDays = 5;
+            _rentalStartTime = 4294967295; // Some future time (in unix timestamp)
+        });
+
+        
+    });
 
     // it ("Address in string check1", async () => {
     //     const addr = '0xcd3b766ccdd6ae721141f452c550ca635964ce71';
