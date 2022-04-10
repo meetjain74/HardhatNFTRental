@@ -13,12 +13,18 @@ describe("NFT Rental contract", () => {
     });
 
     describe("Add user", () => {
+
+        it("Any other user can't add your address to app",async () => {
+            await expect(contract.addUser(addr1.address))
+            .to.be.revertedWith("Only the user can add his account to app");
+        });
+
         it("Should add user to the users list",async () => {
-            await contract.addUser(addr1.address);
+            await contract.connect(addr1).addUser(addr1.address);
             const userAddressList = await contract.getUserAddressList();
             expect(userAddressList[0]).to.equal(addr1.address);
     
-            const user = await contract.addressToUser(addr1.address);
+            const user = await contract.connect(addr1).addressToUser(addr1.address);
             expect(user.userAddress).to.equal(addr1.address);
             expect(user.userLendedNftsSize).to.equal(0);
             expect(user.userRentedNftsSize).to.equal(0);
@@ -37,15 +43,15 @@ describe("NFT Rental contract", () => {
             });
 
             it("User should exist for able to fetch his/her lended NFT details",async () => {
-                await expect(contract.getUserLendedNFTDetails(
+                await expect(contract.connect(addr1).getUserLendedNFTDetails(
                     _userAddress,_index
                 ))
                 .to.be.revertedWith("User does not exists");
             });
 
             it("Index of NFT to be fetched should exist",async () => {
-                await contract.addUser(_userAddress);
-                await expect(contract.getUserLendedNFTDetails(
+                await contract.connect(addr1).addUser(_userAddress);
+                await expect(contract.connect(addr1).getUserLendedNFTDetails(
                     _userAddress,_index
                 ))
                 .to.be.revertedWith("Nft at the given index does not exist");
@@ -72,8 +78,16 @@ describe("NFT Rental contract", () => {
             _collateral = 10000000000000;
         });
 
-        it("Lender address/NFT Owner should exist",async () => {
+        it("Should not lend anyone else's NFT",async ()=> {
             await expect(contract.addNFTToLend(
+                _nftKey,_nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName,
+                _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral
+            ))
+            .to.be.revertedWith("Can't lend someone else's NFT");
+        });
+
+        it("Lender address/NFT Owner should exist",async () => {
+            await expect(contract.connect(addr1).addNFTToLend(
                 _nftKey,_nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName,
                 _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral
             ))
@@ -81,14 +95,14 @@ describe("NFT Rental contract", () => {
         });
 
         it("NFT should not be rented again",async () => {
-            await contract.addUser(_lenderAddress);
-            const response = await contract.addNFTToLend(
+            await contract.connect(addr1).addUser(_lenderAddress);
+            const response = await contract.connect(addr1).addNFTToLend(
                 _nftKey,_nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName,
                 _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral
             );
 
             // Calling same function twice - for nft to be available for renting again
-            await expect(contract.addNFTToLend(
+            await expect(contract.connect(addr1).addNFTToLend(
                 _nftKey,_nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName,
                 _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral
             ))
@@ -97,8 +111,8 @@ describe("NFT Rental contract", () => {
 
        it("Wrong NFT owner should not able to lend NFT",async () => {
            _lenderAddress = addr2.address;
-           await contract.addUser(_lenderAddress);
-           await expect(contract.addNFTToLend(
+           await contract.connect(addr2).addUser(_lenderAddress);
+           await expect(contract.connect(addr2).addNFTToLend(
                 _nftKey,_nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName,
                 _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral
            ))
@@ -106,9 +120,9 @@ describe("NFT Rental contract", () => {
        });
 
        it("Due date smaller than today should not be accepted",async () => {
-           await contract.addUser(_lenderAddress);
+           await contract.connect(addr1).addUser(_lenderAddress);
            _dueDate = 1649500514;
-           await expect(contract.addNFTToLend(
+           await expect(contract.connect(addr1).addNFTToLend(
                 _nftKey,_nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName,
                 _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral
            ))
@@ -116,9 +130,9 @@ describe("NFT Rental contract", () => {
        });
 
        it("Wishlist count for new NFT made available for renting should be 0",async () => {
-            await contract.addUser(_lenderAddress);
+            await contract.connect(addr1).addUser(_lenderAddress);
             _wishlistCount = 5;
-            await expect(contract.addNFTToLend(
+            await expect(contract.connect(addr1).addNFTToLend(
                 _nftKey,_nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName,
                 _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral
             ))
@@ -126,17 +140,17 @@ describe("NFT Rental contract", () => {
        });
 
        it("Should make NFT available for renting",async () => {
-           await contract.addUser(_lenderAddress);
-           await contract.addNFTToLend(
+           await contract.connect(addr1).addUser(_lenderAddress);
+           await contract.connect(addr1).addNFTToLend(
                 _nftKey,_nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName,
                 _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral
            );
 
-           const nftKeysListAvaiableForRent = await contract.getNftKeysListAvaiableForRent();
+           const nftKeysListAvaiableForRent = await contract.connect(addr1).getNftKeysListAvaiableForRent();
            expect(nftKeysListAvaiableForRent[0]).to.equal(_nftKey);
 
            // Check mapping nftKeyToNftProps
-           const nft = await contract.nftKeyToNftProps(_nftKey);
+           const nft = await contract.connect(addr1).nftKeyToNftProps(_nftKey);
            expect(nft.nftKey).to.equal(_nftKey);
            expect(nft.nftOwner).to.equal(_nftOwner);
            expect(nft.nftAddress).to.equal(_nftAddress);
@@ -145,28 +159,31 @@ describe("NFT Rental contract", () => {
            expect(nft.nftImageURL).to.equal(_nftImageURL);
 
            // Get user from address
-           const user = await contract.addressToUser(_lenderAddress);
+           const user = await contract.connect(addr1).addressToUser(_lenderAddress);
            expect(user.userAddress).to.equal(_lenderAddress);
            expect(user.userLendedNftsSize).to.equal(1);
            expect(user.userRentedNftsSize).to.equal(0);
            expect(user.userWishlistSize).to.equal(0);
 
-           const lendedNftDetails = await contract.getUserLendedNFTDetails(_lenderAddress,0);
+           const lendedNftDetails = await contract.connect(addr1).getUserLendedNFTDetails(_lenderAddress,0);
            expect(lendedNftDetails.nftKey).to.equal(_nftKey);
            expect(lendedNftDetails.lenderAddress).to.equal(_lenderAddress);
+           expect(lendedNftDetails.borrowerAddress).to.equal("0x0000000000000000000000000000000000000000");
            expect(lendedNftDetails.dueDate).to.equal(_dueDate);
            expect(lendedNftDetails.dailyRent).to.equal(_dailyRent);
            expect(lendedNftDetails.collateral).to.equal(_collateral);
 
            // Check mapping nftKeyToLendedNftDetails
-           const lendedNft = await contract.nftKeyToLendedNftDetails(_nftKey);
+           const lendedNft = await contract.connect(addr1).nftKeyToLendedNftDetails(_nftKey);
            expect(lendedNft.nftKey).to.equal(_nftKey);
            expect(lendedNft.lenderAddress).to.equal(_lenderAddress);
+           expect(lendedNft.borrowerAddress).to.equal("0x0000000000000000000000000000000000000000");
            expect(lendedNft.dueDate).to.equal(_dueDate);
            expect(lendedNft.dailyRent).to.equal(_dailyRent);
            expect(lendedNft.collateral).to.equal(_collateral);
        });
     });
+
 
     // it ("Address in string check1", async () => {
     //     const addr = '0xcd3b766ccdd6ae721141f452c550ca635964ce71';
