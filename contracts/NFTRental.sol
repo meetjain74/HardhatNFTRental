@@ -105,6 +105,21 @@ contract NFTRental {
         return user.userLendedNfts[_nftKey];
     }
 
+    function getUserRentedNFTDetails(address _userAddress,string memory _nftKey) public view returns(rentedNFT memory) {
+        // Should not be a zero address
+        require(_userAddress!=address(0),"Invalid address");
+
+        User storage user = addressToUser[_userAddress];
+
+        // User should exist
+        require(user.userAddress!=address(0),"User does not exists");
+
+        // The nft _nftKey should exist in user rented NFTs
+        require(user.userRentedNfts[_nftKey].borrowerAddress!=address(0),"User does not have any such rented Nft");
+
+        return user.userRentedNfts[_nftKey];
+    }
+
     function addUser(address _userAddress) external {
         // Should not be a zero address
         require(_userAddress!=address(0),"Invalid address");
@@ -209,7 +224,7 @@ contract NFTRental {
         // Rental start time should be less than current time
         require(_rentalStartTime<block.timestamp,"Bad time bounds");
 
-        uint32 rentalEndTime = _rentalStartTime + (_numberOfDays*1 days);
+        uint32 rentalEndTime = _rentalStartTime + (uint32(_numberOfDays)*1 days);
         uint32 _dueDate = nftKeyToLendedNftDetails[_nftKey].dueDate;
         require(rentalEndTime<_dueDate,"Can't rent NFT for more than amount of time available for renting");
 
@@ -221,14 +236,19 @@ contract NFTRental {
         // Amount to be paid should be greater than or equal to rentalPayment
         require(msg.value>=totalPayment,"Can't rent NFT as insufficient amount paid");
 
-        // Borrower address of the nft to be rented should be address(0) 
-        require(nftKeyToLendedNftDetails[_nftKey].borrowerAddress==address(0),"NFT already rented by someone else");
+        // // Borrower address of the nft to be rented should be address(0) 
+        // This will always be true because we are deleting the mapping
+        // require(nftKeyToLendedNftDetails[_nftKey].borrowerAddress==address(0),"NFT already rented by someone else");
 
         // Delete and update mappings 
 
         // Update borrower in lended user's nft
-        
+
         address lenderAddress = nftKeyToLendedNftDetails[_nftKey].lenderAddress;
+
+        // Lender should not be the borrower
+        require(lenderAddress!=_borrowerAddress,"Borrower address can't be the same as lender address");
+
         User storage lender = addressToUser[lenderAddress];
         require(lender.userLendedNfts[_nftKey].borrowerAddress==address(0),"NFT already rented by someone else");
         lender.userLendedNfts[_nftKey].borrowerAddress = _borrowerAddress;
@@ -270,7 +290,7 @@ contract NFTRental {
  
         // Transfer rental payment to the lender 
 
-        address payable lenderAddress_ = payable(nftKeyToLendedNftDetails[_nftKey].lenderAddress);
+        address payable lenderAddress_ = payable(lenderAddress);
         lenderAddress_.transfer(rentalPayment);
 
         emit NFTRented();
