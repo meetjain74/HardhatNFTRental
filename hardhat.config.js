@@ -28,7 +28,7 @@ const { privateKeyOwner, projectEndpoint, privateKeyAddr1, privateKeyAddr2, priv
 module.exports = {
   solidity: "0.8.5",
   gasReporter: {
-    enabled: true
+    enabled: false
   },
   networks: {
     rinkeby: {
