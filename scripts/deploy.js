@@ -1,6 +1,6 @@
 const { ethers } = require("hardhat");
 
- async function main() {
+async function main() {
     const [deployer] = await ethers.getSigners();
     console.log(`Deploying contracts with the account: ${deployer.address}`);
 
@@ -10,6 +10,9 @@ const { ethers } = require("hardhat");
     const NFTRentalContract = await ethers.getContractFactory("NFTRental");
     const contract = await NFTRentalContract.deploy();
     console.log(`Token address: ${contract.address}`);
+
+    const temp = await contract.temp();
+    console.log(temp);
  } 
 
  main()

@@ -1,6 +1,8 @@
 const { expect } = require('chai');
 const { ethers } = require('hardhat');
 
+const { nftAddress, nftId, nftKey, nftOwner, nftName, nftImageURL } = require('./nftData.json');
+
 describe("NFT Rental contract", () => {
     let owner,contract;
     let addr1,addr2,addr3;
@@ -8,6 +10,8 @@ describe("NFT Rental contract", () => {
     beforeEach(async () => {
         // Create the smart contract object to test from
         [owner,addr1,addr2,addr3] = await ethers.getSigners();
+        // console.log(owner.address);
+        // console.log(addr1.address);
         const NFTRentalContract = await ethers.getContractFactory("NFTRental");
         contract = await NFTRentalContract.deploy();
     });
@@ -42,7 +46,7 @@ describe("NFT Rental contract", () => {
 
             beforeEach(async () => {
                 _userAddress = addr1.address;
-                _nftKey = "0xcd3b766ccdd6ae721141f452c550ca635964ce718";
+                _nftKey = nftKey;
                 // _index = 0;
             });
 
@@ -76,7 +80,7 @@ describe("NFT Rental contract", () => {
 
             beforeEach(async () => {
                 _userAddress = addr1.address;
-                _nftKey = "0xcd3b766ccdd6ae721141f452c550ca635964ce718";
+                _nftKey = nftKey;
                 // _index = 0;
             });
 
@@ -102,14 +106,14 @@ describe("NFT Rental contract", () => {
         let _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral;
 
         beforeEach(async () => {
-            _nftKey = "0xcd3b766ccdd6ae721141f452c550ca635964ce718";
-            _nftOwner = addr1.address;
-            const nftWallet = new ethers.Wallet('0xcd3b766ccdd6ae721141f452c550ca635964ce71');
+            _nftKey = nftKey;
+            _nftOwner = addr1.address; // To be changed 
+            const nftWallet = new ethers.Wallet(nftAddress);
             _nftAddress = nftWallet.address;
-            _nftId = 8;
+            _nftId = parseInt(nftId);
             _wishlistCount = 0;
-            _nftName = "Loki NFT";
-            _nftImageURL = "https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/is-loki-alive-1618935098.jpeg";
+            _nftName = nftName;
+            _nftImageURL = nftImageURL;
             _lenderAddress = addr1.address;
             _dueDate = 4294967295; // In Unix epoch (9 August 2022)
             _dailyRent = 1000000;
@@ -231,18 +235,18 @@ describe("NFT Rental contract", () => {
         let val;
 
         beforeEach(async () => {
-            _nftKey = "0xcd3b766ccdd6ae721141f452c550ca635964ce718";
+            _nftKey = nftKey;
             _borrowerAddress = addr1.address;
             _numberOfDays = 5;
             _rentalStartTime = 1649500514; // in unix epoch
 
-            _nftOwner = addr1.address;
-            const nftWallet = new ethers.Wallet('0xcd3b766ccdd6ae721141f452c550ca635964ce71');
+            _nftOwner = addr1.address; // To be changed
+            const nftWallet = new ethers.Wallet(nftAddress);
             _nftAddress = nftWallet.address;
-            _nftId = 8;
+            _nftId = parseInt(nftId);
             _wishlistCount = 0;
-            _nftName = "Loki NFT";
-            _nftImageURL = "https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/is-loki-alive-1618935098.jpeg";
+            _nftName = nftName;
+            _nftImageURL = nftImageURL;
             _lenderAddress = addr1.address;
             _dueDate = 4294967295; // In Unix epoch
             _dailyRent = 1000000;

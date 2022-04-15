@@ -4,8 +4,9 @@ pragma solidity ^0.8.0;
 
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 
-contract NFTRental {
+contract NFTRental is ERC721Holder {
 
     // constructor() ERC721("NFTRental", "MVVT") { }
 
@@ -184,6 +185,22 @@ contract NFTRental {
         _lendNFT(_nftKey,_lenderAddress,_dueDate,_dailyRent,_collateral);
     }
 
+    function approveNFT (address _nftAddress, uint _nftId, address _testAddress) public returns (bool) {
+        ERC721 nftCollection = ERC721(_nftAddress);
+        nftCollection.approve(_testAddress,_nftId);
+        return true;
+    }
+
+    function setApproval (address _nftAddress, address _testAddress) public returns (bool) {
+        ERC721 nftCollection = ERC721(_nftAddress);
+        nftCollection.setApprovalForAll(_testAddress, true);
+        return true;
+    }
+
+    function msgSender() public view returns (address) {
+        return msg.sender;
+    }
+
     function _lendNFT(
         string memory _nftKey,
         address _lenderAddress,
@@ -209,25 +226,8 @@ contract NFTRental {
         uint16 _numberOfDays,
         uint32 _rentalStartTime
     ) external payable {
-
-        // Borrower address should be msg.sender
-        require(msg.sender==_borrowerAddress,"Can't borrow NFT for another borrower address");
-
-        // Borrower address should exist in our app
-        require(addressToUser[_borrowerAddress].userAddress!=address(0),"User does not exist");
-
-        // NFT should be available for renting i.e must exist in mapping
-        //There is no proper way to check if a key already exists or not therefore we are checking for default value i.e., all bits are 0
-        require(nftKeyToNftProps[_nftKey].nftAddress!=address(0),"NFT is not available for renting");
-        require(nftKeyToLendedNftDetails[_nftKey].lenderAddress!=address(0),"NFT is not available for renting");
-
-        // Rental start time should be less than current time
-        require(_rentalStartTime<block.timestamp,"Bad time bounds");
-
-        uint32 rentalEndTime = _rentalStartTime + (uint32(_numberOfDays)*1 days);
-        uint32 _dueDate = nftKeyToLendedNftDetails[_nftKey].dueDate;
-        require(rentalEndTime<_dueDate,"Can't rent NFT for more than amount of time available for renting");
-
+        _checkParamters(_nftKey,_borrowerAddress,_numberOfDays,_rentalStartTime);
+        
         uint256 _dailyRent = nftKeyToLendedNftDetails[_nftKey].dailyRent;
         uint256 _collateral = nftKeyToLendedNftDetails[_nftKey].collateral;
         uint256 rentalPayment = _dailyRent*_numberOfDays;
@@ -241,9 +241,65 @@ contract NFTRental {
         // require(nftKeyToLendedNftDetails[_nftKey].borrowerAddress==address(0),"NFT already rented by someone else");
 
         // Delete and update mappings 
+        _deleteAndUpdateMappings(_nftKey,_borrowerAddress,_numberOfDays,_rentalStartTime);
 
+        // Payment
+
+        if (msg.value>totalPayment) {
+            // Transfer remaining amount back to his account
+            address payable borrowerAddress_ = payable(_borrowerAddress);
+            borrowerAddress_.transfer(msg.value-totalPayment);
+        }
+
+        // Transfer NFT to the borrower from contract
+
+        // nftProps storage nft_ = nftKeyToNftProps[_nftKey];
+        // ERC721 nftCollection = ERC721(nft_.nftAddress);
+        // nftCollection.safeTransferFrom(address(this),_borrowerAddress,nft_.nftId);
+ 
+        // Transfer rental payment to the lender 
+
+        address lenderAddress = nftKeyToLendedNftDetails[_nftKey].lenderAddress;
+        address payable lenderAddress_ = payable(lenderAddress);
+        lenderAddress_.transfer(rentalPayment);
+
+        emit NFTRented();
+    }
+
+    function _checkParamters(
+        string memory _nftKey,
+        address _borrowerAddress,
+        uint16 _numberOfDays,
+        uint32 _rentalStartTime
+    ) private view {
+        // Borrower address should be msg.sender
+        require(msg.sender==_borrowerAddress,"Can't borrow NFT for another borrower address");
+
+        // Borrower address should exist in our app
+        require(addressToUser[_borrowerAddress].userAddress!=address(0),"User does not exist");
+
+        nftProps storage nft_ = nftKeyToNftProps[_nftKey];
+
+        // NFT should be available for renting i.e must exist in mapping
+        //There is no proper way to check if a key already exists or not therefore we are checking for default value i.e., all bits are 0
+        require(nft_.nftAddress!=address(0),"NFT is not available for renting");
+        require(nftKeyToLendedNftDetails[_nftKey].lenderAddress!=address(0),"NFT is not available for renting");
+
+        // Rental start time should be less than current time
+        require(_rentalStartTime<block.timestamp,"Bad time bounds");
+
+        uint32 rentalEndTime = _rentalStartTime + (uint32(_numberOfDays)*1 days);
+        uint32 _dueDate = nftKeyToLendedNftDetails[_nftKey].dueDate;
+        require(rentalEndTime<_dueDate,"Can't rent NFT for more than amount of time available for renting");
+    }
+
+    function _deleteAndUpdateMappings(
+        string memory _nftKey,
+        address _borrowerAddress,
+        uint16 _numberOfDays,
+        uint32 _rentalStartTime
+    ) private {
         // Update borrower in lended user's nft
-
         address lenderAddress = nftKeyToLendedNftDetails[_nftKey].lenderAddress;
 
         // Lender should not be the borrower
@@ -259,6 +315,7 @@ contract NFTRental {
         User storage renter = addressToUser[_borrowerAddress];
 
         // Nft should not be already in user rented Nfts
+        // rentedNFT storage rentedNft_ = ;
         require(renter.userRentedNfts[_nftKey].borrowerAddress==address(0),"Nft is already present in user rented Nfts");
         renter.userRentedNfts[_nftKey] = newRentedNft;
 
@@ -272,28 +329,6 @@ contract NFTRental {
         uint _nftKeyIndex = _getElementIndex(_nftKey);
         _deleteElementAtIndex(_nftKeyIndex);
         delete nftKeyToLendedNftDetails[_nftKey];
-
-        // Payment
-
-        if (msg.value>totalPayment) {
-            // Transfer remaining amount back to his account
-            address payable borrowerAddress_ = payable(_borrowerAddress);
-            borrowerAddress_.transfer(msg.value-totalPayment);
-        }
-
-        // Transfer NFT to the borrower from contract
-
-        // nftProps storage nft_ = nftKeyToNftProps[_nftKey];
-        
-        // ERC721 nftCollection = ERC721(nft_.nftAddress);
-        // nftCollection.safeTransferFrom(address(this),_borrowerAddress,nft_.nftId);
- 
-        // Transfer rental payment to the lender 
-
-        address payable lenderAddress_ = payable(lenderAddress);
-        lenderAddress_.transfer(rentalPayment);
-
-        emit NFTRented();
     }
 
     function _getElementIndex(string memory _element) private view returns(uint) {
@@ -314,6 +349,14 @@ contract NFTRental {
         nftKeysListAvaiableForRent.pop();
     }
 
+    function stopLend(string memory _nftKey) external {
+        
+    }
+
+    // function withdraw(address to,address nftAddress,uint nftId) external {
+    //     ERC721 nftCollection = ERC721(nftAddress);
+    //     nftCollection.safeTransferFrom(address(this),to,nftId);
+    // }
 
     //nftProps[] nftsAvailableForRent;
 
