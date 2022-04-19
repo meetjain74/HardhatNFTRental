@@ -17,7 +17,6 @@ contract NFTRental is ERC721Holder {
         address nftOwner;
         address nftAddress;
         uint256 nftId;
-        uint32 wishlistCount; // No of users having this nft in wishlist
 
         string nftName;
         string nftImageURL;
@@ -180,8 +179,7 @@ contract NFTRental is ERC721Holder {
         string memory _nftKey,
         address _nftOwner,
         address _nftAddress,
-        uint256 _nftId,
-        uint32 _wishlistCount, 
+        uint256 _nftId, 
         string memory _nftName,
         string memory _nftImageURL,
         address _lenderAddress,
@@ -207,14 +205,11 @@ contract NFTRental is ERC721Holder {
         // Due date should be after current time
         require(_dueDate>block.timestamp,"Bad time bounds");
 
-        // Wishlist count of new Nft listed for available for renting should be 0
-        require(_wishlistCount==0,"New NFT can't be in any users wishlist yet");
-
         // Transfer NFT to contract
         // ERC721 nftCollection = ERC721(_nftAddress);
         // nftCollection.safeTransferFrom(_lenderAddress,address(this),_nftId);
 
-        nftProps memory newNFT = nftProps(_nftKey,_nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName,_nftImageURL);
+        nftProps memory newNFT = nftProps(_nftKey,_nftOwner,_nftAddress,_nftId,_nftName,_nftImageURL);
         nftKeyToNftProps[_nftKey] = newNFT;
         _lendNFT(_nftKey,_lenderAddress,_dueDate,_dailyRent,_collateral);
     }
@@ -509,7 +504,7 @@ contract NFTRental is ERC721Holder {
     }
 
     function returnNFT() external {
-        
+
     }
 
     // function withdraw(address to,address nftAddress,uint nftId) external {

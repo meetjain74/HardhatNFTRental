@@ -94,7 +94,7 @@ describe("NFT Rental contract", () => {
     });
 
     describe("Lending", () => {
-        let _nftKey,_nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName;
+        let _nftKey,_nftOwner,_nftAddress,_nftId,_nftName;
         let _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral;
 
         beforeEach(async () => {
@@ -103,7 +103,6 @@ describe("NFT Rental contract", () => {
             const nftWallet = new ethers.Wallet(nftAddress);
             _nftAddress = nftWallet.address;
             _nftId = parseInt(nftId);
-            _wishlistCount = 0;
             _nftName = nftName;
             _nftImageURL = nftImageURL;
             _lenderAddress = addr1.address;
@@ -114,7 +113,7 @@ describe("NFT Rental contract", () => {
 
         it("Should not lend anyone else's NFT",async ()=> {
             await expect(contract.addNFTToLend(
-                _nftKey,_nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName,
+                _nftKey,_nftOwner,_nftAddress,_nftId,_nftName,
                 _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral
             ))
             .to.be.revertedWith("Can't lend someone else's NFT");
@@ -122,7 +121,7 @@ describe("NFT Rental contract", () => {
 
         it("Lender address/NFT Owner should exist",async () => {
             await expect(contract.connect(addr1).addNFTToLend(
-                _nftKey,_nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName,
+                _nftKey,_nftOwner,_nftAddress,_nftId,_nftName,
                 _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral
             ))
             .to.be.revertedWith("User does not exist");
@@ -131,13 +130,13 @@ describe("NFT Rental contract", () => {
         it("NFT should not be lended again",async () => {
             await contract.connect(addr1).addUser(_lenderAddress);
             const response = await contract.connect(addr1).addNFTToLend(
-                _nftKey,_nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName,
+                _nftKey,_nftOwner,_nftAddress,_nftId,_nftName,
                 _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral
             );
 
             // Calling same function twice - for nft to be available for renting again
             await expect(contract.connect(addr1).addNFTToLend(
-                _nftKey,_nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName,
+                _nftKey,_nftOwner,_nftAddress,_nftId,_nftName,
                 _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral
             ))
             .to.be.revertedWith("NFT is already available for renting");
@@ -147,7 +146,7 @@ describe("NFT Rental contract", () => {
            _lenderAddress = addr2.address;
            await contract.connect(addr2).addUser(_lenderAddress);
            await expect(contract.connect(addr2).addNFTToLend(
-                _nftKey,_nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName,
+                _nftKey,_nftOwner,_nftAddress,_nftId,_nftName,
                 _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral
            ))
            .to.be.revertedWith("Non NFT Owner");
@@ -157,26 +156,16 @@ describe("NFT Rental contract", () => {
            await contract.connect(addr1).addUser(_lenderAddress);
            _dueDate = 1649500514;
            await expect(contract.connect(addr1).addNFTToLend(
-                _nftKey,_nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName,
+                _nftKey,_nftOwner,_nftAddress,_nftId,_nftName,
                 _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral
            ))
            .to.be.revertedWith("Bad time bounds");
        });
 
-       it("Wishlist count for new NFT made available for renting should be 0",async () => {
-            await contract.connect(addr1).addUser(_lenderAddress);
-            _wishlistCount = 5;
-            await expect(contract.connect(addr1).addNFTToLend(
-                _nftKey,_nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName,
-                _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral
-            ))
-            .to.be.revertedWith("New NFT can't be in any users wishlist yet");
-       });
-
        it("Should make NFT available for renting",async () => {
            await contract.connect(addr1).addUser(_lenderAddress);
            await contract.connect(addr1).addNFTToLend(
-                _nftKey,_nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName,
+                _nftKey,_nftOwner,_nftAddress,_nftId,_nftName,
                 _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral
            );
 
@@ -188,7 +177,6 @@ describe("NFT Rental contract", () => {
            expect(nft.nftKey).to.equal(_nftKey);
            expect(nft.nftOwner).to.equal(_nftOwner);
            expect(nft.nftAddress).to.equal(_nftAddress);
-           expect(nft.wishlistCount).to.equal(_wishlistCount);
            expect(nft.nftName).to.equal(_nftName);
            expect(nft.nftImageURL).to.equal(_nftImageURL);
 
@@ -226,7 +214,7 @@ describe("NFT Rental contract", () => {
     describe("Renting", () => {
         let _nftKey,_borrowerAddress,_numberOfDays,_rentalStartTime;
         // For renting, nft should be lended first
-        let _nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName;
+        let _nftOwner,_nftAddress,_nftId,_nftName;
         let _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral;
         let val;
 
@@ -240,7 +228,6 @@ describe("NFT Rental contract", () => {
             const nftWallet = new ethers.Wallet(nftAddress);
             _nftAddress = nftWallet.address;
             _nftId = parseInt(nftId);
-            _wishlistCount = 0;
             _nftName = nftName;
             _nftImageURL = nftImageURL;
             _lenderAddress = addr1.address;
@@ -279,7 +266,7 @@ describe("NFT Rental contract", () => {
             // Address 1 puts NFT to rent
             await contract.connect(addr1).addUser(_borrowerAddress);
             await contract.connect(addr1).addNFTToLend(
-                _nftKey,_nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName,
+                _nftKey,_nftOwner,_nftAddress,_nftId,_nftName,
                 _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral
             );
             
@@ -299,7 +286,7 @@ describe("NFT Rental contract", () => {
             // Address 1 puts NFT to rent
             await contract.connect(addr1).addUser(_borrowerAddress);
             await contract.connect(addr1).addNFTToLend(
-                _nftKey,_nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName,
+                _nftKey,_nftOwner,_nftAddress,_nftId,_nftName,
                 _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral
             );
             
@@ -318,7 +305,7 @@ describe("NFT Rental contract", () => {
             // Address 1 puts NFT to rent
             await contract.connect(addr1).addUser(_borrowerAddress);
             await contract.connect(addr1).addNFTToLend(
-                _nftKey,_nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName,
+                _nftKey,_nftOwner,_nftAddress,_nftId,_nftName,
                 _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral
             );
 
@@ -336,7 +323,7 @@ describe("NFT Rental contract", () => {
             // Address 1 puts NFT to rent
             await contract.connect(addr1).addUser(_borrowerAddress);
             await contract.connect(addr1).addNFTToLend(
-                _nftKey,_nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName,
+                _nftKey,_nftOwner,_nftAddress,_nftId,_nftName,
                 _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral
             );
 
@@ -352,7 +339,7 @@ describe("NFT Rental contract", () => {
             // Address 1 puts NFT to rent
             await contract.connect(addr1).addUser(_borrowerAddress);
             await contract.connect(addr1).addNFTToLend(
-                _nftKey,_nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName,
+                _nftKey,_nftOwner,_nftAddress,_nftId,_nftName,
                 _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral
             );
 
@@ -410,7 +397,7 @@ describe("NFT Rental contract", () => {
 
     describe("Stop Lending", () => {
         let _nftKey;
-        let _nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName;
+        let _nftOwner,_nftAddress,_nftId,_nftName;
         let _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral;
         let _borrowerAddress,_numberOfDays,_rentalStartTime;
         let val;
@@ -425,7 +412,6 @@ describe("NFT Rental contract", () => {
             const nftWallet = new ethers.Wallet(nftAddress);
             _nftAddress = nftWallet.address;
             _nftId = parseInt(nftId);
-            _wishlistCount = 0;
             _nftName = nftName;
             _nftImageURL = nftImageURL;
             _lenderAddress = addr1.address;
@@ -450,7 +436,7 @@ describe("NFT Rental contract", () => {
         it("Nft should not be already rented",async () => {
             await contract.connect(addr1).addUser(addr1.address);
             await contract.connect(addr1).addNFTToLend(
-                _nftKey,_nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName,
+                _nftKey,_nftOwner,_nftAddress,_nftId,_nftName,
                 _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral
             );
 
@@ -470,7 +456,7 @@ describe("NFT Rental contract", () => {
         it("Should not stop lend someone else's NFT",async () => {
             await contract.connect(addr1).addUser(addr1.address);
             await contract.connect(addr1).addNFTToLend(
-                _nftKey,_nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName,
+                _nftKey,_nftOwner,_nftAddress,_nftId,_nftName,
                 _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral
             );
 
@@ -482,7 +468,7 @@ describe("NFT Rental contract", () => {
         it("Should stop lend if everything else works fine",async() => {
             await contract.connect(addr1).addUser(addr1.address);
             await contract.connect(addr1).addNFTToLend(
-                _nftKey,_nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName,
+                _nftKey,_nftOwner,_nftAddress,_nftId,_nftName,
                 _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral
             );
 
@@ -501,7 +487,6 @@ describe("NFT Rental contract", () => {
             expect(nftProps_.nftOwner).to.equal("0x0000000000000000000000000000000000000000");
             expect(nftProps_.nftAddress).to.equal("0x0000000000000000000000000000000000000000");
             expect(nftProps_.nftId).to.equal(0);
-            expect(nftProps_.wishlistCount).to.equal(0);
             expect(nftProps_.nftName).to.equal("");
             expect(nftProps_.nftImageURL).to.equal("");
 
@@ -518,7 +503,7 @@ describe("NFT Rental contract", () => {
 
     describe("Claim collateral", () => {
         let _nftKey;
-        let _nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName;
+        let _nftOwner,_nftAddress,_nftId,_nftName;
         let _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral;
         let _borrowerAddress,_numberOfDays,_rentalStartTime;
         let val;
@@ -533,7 +518,6 @@ describe("NFT Rental contract", () => {
             const nftWallet = new ethers.Wallet(nftAddress);
             _nftAddress = nftWallet.address;
             _nftId = parseInt(nftId);
-            _wishlistCount = 0;
             _nftName = nftName;
             _nftImageURL = nftImageURL;
             _lenderAddress = addr1.address;
@@ -558,7 +542,7 @@ describe("NFT Rental contract", () => {
         it("Is Nft rented",async () => {
             await contract.connect(addr1).addUser(addr1.address);
             await contract.connect(addr1).addNFTToLend(
-                _nftKey,_nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName,
+                _nftKey,_nftOwner,_nftAddress,_nftId,_nftName,
                 _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral
             );
 
@@ -569,7 +553,7 @@ describe("NFT Rental contract", () => {
         it("Should not claim collateral before rental end time",async () => {
             await contract.connect(addr1).addUser(addr1.address);
             await contract.connect(addr1).addNFTToLend(
-                _nftKey,_nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName,
+                _nftKey,_nftOwner,_nftAddress,_nftId,_nftName,
                 _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral
             );
 
@@ -590,7 +574,7 @@ describe("NFT Rental contract", () => {
         it("Should claim collateral if everything works fine",async () => {
             await contract.connect(addr1).addUser(addr1.address);
             await contract.connect(addr1).addNFTToLend(
-                _nftKey,_nftOwner,_nftAddress,_nftId,_wishlistCount,_nftName,
+                _nftKey,_nftOwner,_nftAddress,_nftId,_nftName,
                 _nftImageURL,_lenderAddress,_dueDate,_dailyRent,_collateral
             );
 
