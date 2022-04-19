@@ -31,6 +31,9 @@ module.exports = {
     enabled: false
   },
   networks: {
+    hardhat: {
+      allowUnlimitedContractSize: true
+    },
     rinkeby: {
       url: projectEndpoint,
       accounts: [
