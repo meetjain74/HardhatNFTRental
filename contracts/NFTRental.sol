@@ -470,6 +470,9 @@ contract NFTRental is ERC721Holder {
         // Delete nft from app rented Nfts
         delete nftKeyToRentedNftDetails[_nftKey];
 
+        // Delete nft from app
+        delete nftKeyToNftProps[_nftKey];
+
         // Delete nft from lender's lended nfts mapping and list
         uint _nftKeyUserLendedIndex = _getUserLendedListElementIndex(_nftKey, lender);
         _deleteElementAtUserLendedListIndex(_nftKeyUserLendedIndex, lender);
@@ -503,8 +506,92 @@ contract NFTRental is ERC721Holder {
         user.userRentedNftsList.pop();
     }
 
-    function returnNFT() external {
+    // Called by borrower
+    function returnNFT(string memory _nftKey) external {
+        _returnNFTChecks(_nftKey);
 
+        User storage borrower = addressToUser[msg.sender];
+        rentedNFT storage rentNft_ = nftKeyToRentedNftDetails[_nftKey];
+        User storage lender = addressToUser[rentNft_.lenderAddress];
+        
+        //nftProps storage nft_ = nftKeyToNftProps[_nftKey];
+        //uint tokenId = nft_.nftId;
+
+        lendedNFT storage userLendNft_ = lender.userLendedNfts[_nftKey];
+        uint collateral = userLendNft_.collateral;
+
+        address lenderAddress = lender.userAddress;
+        address payable borrowerAddress = payable(borrower.userAddress);
+
+        // Delete and update mappings
+        
+        // remove nft from app rented nfts
+        delete nftKeyToRentedNftDetails[_nftKey];
+
+        // remove nft from borrower rented nfts
+        uint _nftKeyUserRentedIndex = _getUserRentedListElementIndex(_nftKey, borrower);
+        _deleteElementAtUserRentedListIndex(_nftKeyUserRentedIndex, borrower);
+        delete borrower.userRentedNfts[_nftKey];
+
+        uint32 dueDate = userLendNft_.dueDate;
+
+        // before due date has passed
+        if (block.timestamp < dueDate) {
+            // set borrower address lender lended nfts to address 0 
+            userLendNft_.borrowerAddress = address(0);
+
+            // Add nft in app lended NFT - Nft again for lend
+            lendedNFT memory newNft = lendedNFT(_nftKey,lenderAddress,address(0),dueDate,userLendNft_.dailyRent,collateral);
+            nftKeyToLendedNftDetails[_nftKey] = newNft;
+            nftKeysListAvaiableForRent.push(_nftKey);
+
+            // Transfer NFT to contract - Contract should be approved first
+            // ERC721 nftCollection = ERC721(nft_.nftAddress);
+            // nftCollection.safeTransferFrom(borrowerAddress,address(this),tokenId);
+        } 
+        
+        // after due date has passed
+        else {
+            // Delete nft from lender's lended nfts mapping and list
+            uint _nftKeyUserLendedIndex = _getUserLendedListElementIndex(_nftKey, lender);
+            _deleteElementAtUserLendedListIndex(_nftKeyUserLendedIndex, lender);
+            delete lender.userLendedNfts[_nftKey];
+
+            // Delete nft from app
+            delete nftKeyToNftProps[_nftKey]; 
+
+            // Transfer NFT to lender - Contract should be approved first
+            // ERC721 nftCollection = ERC721(nft_.nftAddress);
+            // nftCollection.safeTransferFrom(borrowerAddress,lenderAddress,tokenId);
+        }
+
+        // Transfer collateral to borrower
+        borrowerAddress.transfer(collateral);
+    }
+
+    function _returnNFTChecks(string memory _nftKey) private view {
+        // Msg sender should exists
+        User storage borrower = addressToUser[msg.sender];
+        require(borrower.userAddress!=address(0),"User does not exists");
+
+        nftProps storage nft_ = nftKeyToNftProps[_nftKey];
+
+        // Nft should be available in app
+        require(nft_.nftAddress!=address(0),"NFT is not available");
+
+        // Nft should be already rented
+        lendedNFT storage lendNft_ = nftKeyToLendedNftDetails[_nftKey];
+        require(lendNft_.lenderAddress==address(0),"NFT is not rented");
+
+        rentedNFT storage rentNft_ = nftKeyToRentedNftDetails[_nftKey];
+        require(rentNft_.borrowerAddress!=address(0),"NFT is not rented");
+
+        User storage lender = addressToUser[rentNft_.lenderAddress];
+        require(lender.userAddress!=address(0),"Lender does not exist");
+
+        // User should have that nft as rent
+        rentedNFT storage userRentNft_ = borrower.userRentedNfts[_nftKey];
+        require(userRentNft_.borrowerAddress==msg.sender,"User does not have any such NFTs as rent");
     }
 
     // function withdraw(address to,address nftAddress,uint nftId) external {
