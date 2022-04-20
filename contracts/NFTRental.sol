@@ -81,6 +81,9 @@ contract NFTRental is ERC721Holder {
     // Events
     event NFTLended(); 
     event NFTRented();
+    event NFTStopLended();
+    event NFTCollateralClaimed();
+    event NFTReturned();
 
     function getContractBalance() external view returns(uint) {
         return address(this).balance;
@@ -411,6 +414,7 @@ contract NFTRental is ERC721Holder {
         // Transfer Nft to lender address
         // nftCollection.safeTransferFrom(address(this), msg.sender, tokenId);
 
+        emit NFTStopLended();
     }
 
     function _getUserLendedListElementIndex(string memory _element, User storage user) private view returns(uint) {
@@ -486,6 +490,8 @@ contract NFTRental is ERC721Holder {
         // Pay collateral to lender
         address payable lenderAddress = payable(lender.userAddress);
         lenderAddress.transfer(collateral);
+
+        emit NFTCollateralClaimed();
     }
 
     function _getUserRentedListElementIndex(string memory _element, User storage user) private view returns(uint) {
@@ -567,6 +573,8 @@ contract NFTRental is ERC721Holder {
 
         // Transfer collateral to borrower
         borrowerAddress.transfer(collateral);
+
+        emit NFTReturned();
     }
 
     function _returnNFTChecks(string memory _nftKey) private view {
