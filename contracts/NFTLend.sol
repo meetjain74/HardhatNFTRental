@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.0;
 
-import "hardhat/console.sol";
 import "./NFTFactory.sol";
 
 contract NFTLend is NFTFactory {
@@ -19,9 +17,13 @@ contract NFTLend is NFTFactory {
     string[] internal nftKeysListAvaiableForRent;
 
     // Mapping of nft key to lended nft details
-    mapping (string => lendedNFT) public nftKeyToLendedNftDetails;
+    mapping(string => lendedNFT) public nftKeyToLendedNftDetails;
 
-    function getNftKeysListAvaiableForRent() public view returns(string[] memory) {
+    function getNftKeysListAvaiableForRent()
+        public
+        view
+        returns (string[] memory)
+    {
         return nftKeysListAvaiableForRent;
     }
 }

@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.0;
 
-import "hardhat/console.sol";
 import "./NFTFactory.sol";
 
 contract NFTRent is NFTFactory {
@@ -15,5 +13,5 @@ contract NFTRent is NFTFactory {
     }
 
     // Mapping of nft key to rented nft details - those nfts which users have took on rent
-    mapping (string => rentedNFT) public nftKeyToRentedNftDetails;
+    mapping(string => rentedNFT) public nftKeyToRentedNftDetails;
 }
