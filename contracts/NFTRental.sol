@@ -45,19 +45,12 @@ contract NFTRental is ERC721Holder {
         // String for mappings is nftKey
         mapping (string => lendedNFT) userLendedNfts;
         string[] userLendedNftsList;
-        // uint32 userLendedNftsSize;
 
         mapping (string => rentedNFT) userRentedNfts;
         string[] userRentedNftsList;
-        // uint32 userRentedNftsSize;
 
         mapping (string => lendedNFT) userWishlist;
         string[] userWishlistList;
-        // uint32 userWishlistSize;
-
-        // lendedNFT[] userLendedNfts;
-        // rentedNFT[] userRentedNfts;
-        // lendedNFT[] userWishlist;
     }
 
     // Address of all the users of the app
@@ -169,10 +162,6 @@ contract NFTRental is ERC721Holder {
             // User does not exist
             User storage newUser = addressToUser[_userAddress];
             newUser.userAddress=_userAddress;
-            // newUser.userLendedNftsSize=0;
-            // newUser.userRentedNftsSize=0;
-            // newUser.userWishlistSize=0;
-
             userAddressList.push(_userAddress);
         }
     }
@@ -601,26 +590,4 @@ contract NFTRental is ERC721Holder {
         rentedNFT storage userRentNft_ = borrower.userRentedNfts[_nftKey];
         require(userRentNft_.borrowerAddress==msg.sender,"User does not have any such NFTs as rent");
     }
-
-    // function withdraw(address to,address nftAddress,uint nftId) external {
-    //     ERC721 nftCollection = ERC721(nftAddress);
-    //     nftCollection.safeTransferFrom(address(this),to,nftId);
-    // }
-
-    //nftProps[] nftsAvailableForRent;
-
-    // String is concatenation of nft props 
-    // Represents details of nfts available for rent 
-    // mapping (string => lendedNFT) nftToLendDetails;
-
-    // function _getNftKey(nftProps memory _nft) public view returns(string memory) {
-    //     string memory temp = string(abi.encodePacked(_nft.nftAddress,_nft.nftId));
-    //     console.log(temp);
-    //     return temp;
-    // }
-
-    // function createNFT(address _nftAddress,uint256 _nftId,uint32 _wishlistCount) public pure returns(nftProps memory) {
-    //     nftProps memory myStruct = nftProps(_nftAddress,_nftId,_wishlistCount);
-    //     return myStruct;
-    // }
 }

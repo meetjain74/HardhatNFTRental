@@ -2,15 +2,15 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "D:\\Blockchain projects\\NFT Rental with hardhat\\contracts\\NFTRental.sol": {
-      "lastModificationDate": 1650459941841,
-      "contentHash": "344369baf1ad27049dd9350885d3f7f4",
+      "lastModificationDate": 1650465649732,
+      "contentHash": "9f2992d6fb99ac5002388f6a2b7f1d11",
       "sourceName": "contracts/NFTRental.sol",
       "solcConfig": {
         "version": "0.8.5",
         "settings": {
           "optimizer": {
-            "enabled": false,
-            "runs": 200
+            "enabled": true,
+            "runs": 1000
           },
           "outputSelection": {
             "*": {
@@ -41,15 +41,15 @@
       ]
     },
     "D:\\Blockchain projects\\NFT Rental with hardhat\\node_modules\\@openzeppelin\\contracts\\token\\ERC721\\ERC721.sol": {
-      "lastModificationDate": 1649073783821,
+      "lastModificationDate": 1649584191056,
       "contentHash": "49295810dc45f300e5f84b4b50d88a59",
       "sourceName": "@openzeppelin/contracts/token/ERC721/ERC721.sol",
       "solcConfig": {
         "version": "0.8.5",
         "settings": {
           "optimizer": {
-            "enabled": false,
-            "runs": 200
+            "enabled": true,
+            "runs": 1000
           },
           "outputSelection": {
             "*": {
@@ -91,8 +91,8 @@
         "version": "0.8.5",
         "settings": {
           "optimizer": {
-            "enabled": false,
-            "runs": 200
+            "enabled": true,
+            "runs": 1000
           },
           "outputSelection": {
             "*": {
@@ -128,8 +128,8 @@
         "version": "0.8.5",
         "settings": {
           "optimizer": {
-            "enabled": false,
-            "runs": 200
+            "enabled": true,
+            "runs": 1000
           },
           "outputSelection": {
             "*": {
@@ -163,8 +163,8 @@
         "version": "0.8.5",
         "settings": {
           "optimizer": {
-            "enabled": false,
-            "runs": 200
+            "enabled": true,
+            "runs": 1000
           },
           "outputSelection": {
             "*": {
@@ -200,8 +200,8 @@
         "version": "0.8.5",
         "settings": {
           "optimizer": {
-            "enabled": false,
-            "runs": 200
+            "enabled": true,
+            "runs": 1000
           },
           "outputSelection": {
             "*": {
@@ -235,8 +235,8 @@
         "version": "0.8.5",
         "settings": {
           "optimizer": {
-            "enabled": false,
-            "runs": 200
+            "enabled": true,
+            "runs": 1000
           },
           "outputSelection": {
             "*": {
@@ -270,8 +270,8 @@
         "version": "0.8.5",
         "settings": {
           "optimizer": {
-            "enabled": false,
-            "runs": 200
+            "enabled": true,
+            "runs": 1000
           },
           "outputSelection": {
             "*": {
@@ -305,8 +305,8 @@
         "version": "0.8.5",
         "settings": {
           "optimizer": {
-            "enabled": false,
-            "runs": 200
+            "enabled": true,
+            "runs": 1000
           },
           "outputSelection": {
             "*": {
@@ -342,8 +342,8 @@
         "version": "0.8.5",
         "settings": {
           "optimizer": {
-            "enabled": false,
-            "runs": 200
+            "enabled": true,
+            "runs": 1000
           },
           "outputSelection": {
             "*": {
@@ -377,8 +377,8 @@
         "version": "0.8.5",
         "settings": {
           "optimizer": {
-            "enabled": false,
-            "runs": 200
+            "enabled": true,
+            "runs": 1000
           },
           "outputSelection": {
             "*": {
@@ -412,8 +412,8 @@
         "version": "0.8.5",
         "settings": {
           "optimizer": {
-            "enabled": false,
-            "runs": 200
+            "enabled": true,
+            "runs": 1000
           },
           "outputSelection": {
             "*": {
@@ -439,6 +439,198 @@
       ],
       "artifacts": [
         "ERC721Holder"
+      ]
+    },
+    "D:\\Blockchain projects\\NFT Rental with hardhat\\contracts\\NFTFactory.sol": {
+      "lastModificationDate": 1650465401929,
+      "contentHash": "e779faa9c86b67ea73bc2b2b4b058925",
+      "sourceName": "contracts/NFTFactory.sol",
+      "solcConfig": {
+        "version": "0.8.5",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "hardhat/console.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "NFTFactory"
+      ]
+    },
+    "D:\\Blockchain projects\\NFT Rental with hardhat\\contracts\\NFTRent.sol": {
+      "lastModificationDate": 1650464921235,
+      "contentHash": "3f1db698ffa489919f50b81a38d41dcf",
+      "sourceName": "contracts/NFTRent.sol",
+      "solcConfig": {
+        "version": "0.8.5",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "hardhat/console.sol",
+        "./NFTFactory.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "NFTRent"
+      ]
+    },
+    "D:\\Blockchain projects\\NFT Rental with hardhat\\contracts\\NFTLend.sol": {
+      "lastModificationDate": 1650465468449,
+      "contentHash": "321908c838aa8db48dff9306bf4db951",
+      "sourceName": "contracts/NFTLend.sol",
+      "solcConfig": {
+        "version": "0.8.5",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "hardhat/console.sol",
+        "./NFTFactory.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "NFTLend"
+      ]
+    },
+    "D:\\Blockchain projects\\NFT Rental with hardhat\\contracts\\NFTUser.sol": {
+      "lastModificationDate": 1650465671197,
+      "contentHash": "3c41496bc828d41079a546cce7ac46aa",
+      "sourceName": "contracts/NFTUser.sol",
+      "solcConfig": {
+        "version": "0.8.5",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "hardhat/console.sol",
+        "./NFTLend.sol",
+        "./NFTRent.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "NFTUser"
+      ]
+    },
+    "D:\\Blockchain projects\\NFT Rental with hardhat\\contracts\\NFTHelper.sol": {
+      "lastModificationDate": 1650465804985,
+      "contentHash": "43a86ce875a4d5368ea30b22231b8329",
+      "sourceName": "contracts/NFTHelper.sol",
+      "solcConfig": {
+        "version": "0.8.5",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "hardhat/console.sol",
+        "./NFTUser.sol",
+        "@openzeppelin/contracts/token/ERC721/ERC721.sol",
+        "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "NFTHelper"
       ]
     }
   }

@@ -10,9 +10,6 @@ async function main() {
     const NFTRentalContract = await ethers.getContractFactory("NFTRental");
     const contract = await NFTRentalContract.deploy();
     console.log(`Token address: ${contract.address}`);
-
-    const temp = await contract.temp();
-    console.log(temp);
  } 
 
  main()

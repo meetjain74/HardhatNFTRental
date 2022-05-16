@@ -26,7 +26,15 @@ task("balances", "Prints the balance of each account", async (taskArgs, hre) => 
 const { privateKeyOwner, projectEndpoint, privateKeyAddr1, privateKeyAddr2, privateKeyAddr3 } = require('./secrets.json');
 
 module.exports = {
-  solidity: "0.8.5",
+  solidity: {
+    version: "0.8.5",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 1000,
+      },
+    },
+  },
   gasReporter: {
     enabled: false
   },
