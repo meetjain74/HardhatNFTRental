@@ -231,8 +231,8 @@ contract NFTRental is ERC721Holder {
         require(_dueDate > block.timestamp, "Bad time bounds");
 
         // Transfer NFT to contract
-        // ERC721 nftCollection = ERC721(_nftAddress);
-        // nftCollection.safeTransferFrom(_lenderAddress,address(this),_nftId);
+        ERC721 nftCollection = ERC721(_nftAddress);
+        nftCollection.safeTransferFrom(_lenderAddress,address(this),_nftId);
 
         nftProps memory newNFT = nftProps(
             _nftKey,
@@ -321,9 +321,9 @@ contract NFTRental is ERC721Holder {
 
         // Transfer NFT to the borrower from contract
 
-        // nftProps storage nft_ = nftKeyToNftProps[_nftKey];
-        // ERC721 nftCollection = ERC721(nft_.nftAddress);
-        // nftCollection.safeTransferFrom(address(this),_borrowerAddress,nft_.nftId);
+        nftProps storage nft_ = nftKeyToNftProps[_nftKey];
+        ERC721 nftCollection = ERC721(nft_.nftAddress);
+        nftCollection.safeTransferFrom(address(this),_borrowerAddress,nft_.nftId);
 
         // Transfer rental payment to the lender
 
@@ -470,7 +470,7 @@ contract NFTRental is ERC721Holder {
         require(user.userAddress != address(0), "User does not exists");
 
         nftProps storage nft_ = nftKeyToNftProps[_nftKey];
-        // uint tokenId = nft_.nftId;
+        uint tokenId = nft_.nftId;
 
         // Nft should be available in app
         require(nft_.nftAddress != address(0), "NFT is not available");
@@ -490,8 +490,8 @@ contract NFTRental is ERC721Holder {
         );
 
         // Contract should be the current owner of the nft
-        // ERC721 nftCollection = ERC721(nft_.nftAddress);
-        // require(nftCollection.ownerOf(tokenId)==address(this),"Contract is not the owner of NFT");
+        ERC721 nftCollection = ERC721(nft_.nftAddress);
+        require(nftCollection.ownerOf(tokenId)==address(this),"Contract is not the owner of NFT");
 
         // User should have that nft as lend
         require(
@@ -518,7 +518,7 @@ contract NFTRental is ERC721Holder {
         delete user.userLendedNfts[_nftKey];
 
         // Transfer Nft to lender address
-        // nftCollection.safeTransferFrom(address(this), msg.sender, tokenId);
+        nftCollection.safeTransferFrom(address(this), msg.sender, tokenId);
 
         emit NFTStopLended();
     }
@@ -662,8 +662,8 @@ contract NFTRental is ERC721Holder {
         rentedNFT storage rentNft_ = nftKeyToRentedNftDetails[_nftKey];
         User storage lender = addressToUser[rentNft_.lenderAddress];
 
-        //nftProps storage nft_ = nftKeyToNftProps[_nftKey];
-        //uint tokenId = nft_.nftId;
+        nftProps storage nft_ = nftKeyToNftProps[_nftKey];
+        uint tokenId = nft_.nftId;
 
         lendedNFT storage userLendNft_ = lender.userLendedNfts[_nftKey];
         uint256 collateral = userLendNft_.collateral;
@@ -704,8 +704,8 @@ contract NFTRental is ERC721Holder {
             nftKeysListAvaiableForRent.push(_nftKey);
 
             // Transfer NFT to contract - Contract should be approved first
-            // ERC721 nftCollection = ERC721(nft_.nftAddress);
-            // nftCollection.safeTransferFrom(borrowerAddress,address(this),tokenId);
+            ERC721 nftCollection = ERC721(nft_.nftAddress);
+            nftCollection.safeTransferFrom(borrowerAddress,address(this),tokenId);
         }
         // after due date has passed
         else {
@@ -721,8 +721,8 @@ contract NFTRental is ERC721Holder {
             delete nftKeyToNftProps[_nftKey];
 
             // Transfer NFT to lender - Contract should be approved first
-            // ERC721 nftCollection = ERC721(nft_.nftAddress);
-            // nftCollection.safeTransferFrom(borrowerAddress,lenderAddress,tokenId);
+            ERC721 nftCollection = ERC721(nft_.nftAddress);
+            nftCollection.safeTransferFrom(borrowerAddress,lenderAddress,tokenId);
         }
 
         // Transfer collateral to borrower
