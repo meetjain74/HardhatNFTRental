@@ -77,12 +77,12 @@ contract NFTRental is ERC721Holder {
     }
 
     function getUserLendedNftsList(address userAddress) public view returns (string[] memory) {
-        User user = addressToUser[userAddress];
+        User storage user = addressToUser[userAddress];
         return user.userLendedNftsList;
     }
 
     function getUserRentedNftsList(address userAddress) public view returns (string[] memory) {
-        User user = addressToUser[userAddress];
+        User storage user = addressToUser[userAddress];
         return user.userRentedNftsList;
     }
 
