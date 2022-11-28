@@ -41,8 +41,6 @@ contract NFTRental is ERC721Holder {
         string[] userLendedNftsList;
         mapping(string => rentedNFT) userRentedNfts;
         string[] userRentedNftsList;
-        mapping(string => lendedNFT) userWishlist;
-        string[] userWishlistList;
     }
 
     // Address of all the users of the app
@@ -76,6 +74,16 @@ contract NFTRental is ERC721Holder {
 
     function getUserAddressList() public view returns (address[] memory) {
         return userAddressList;
+    }
+
+    function getUserLendedNftsList(address userAddress) public view returns (string[] memory) {
+        User user = addressToUser[userAddress];
+        return user.userLendedNftsList;
+    }
+
+    function getUserRentedNftsList(address userAddress) public view returns (string[] memory) {
+        User user = addressToUser[userAddress];
+        return user.userRentedNftsList;
     }
 
     function getNftKeysListAvaiableForRent()
